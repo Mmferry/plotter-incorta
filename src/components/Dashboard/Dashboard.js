@@ -1,10 +1,35 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useState } from "react";
-import { useQuery } from "react-query";
-import { fetchColumns } from "../../api";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { fetchColumns, fetchData } from "../../api";
+import Chart from "./Chart";
+
+const DIMENSION = "dimension";
+const MEASURE = "measure";
 
 const Dashboard = () => {
   const { data, error, isLoading, isError } = useQuery("columns", fetchColumns);
+  const [measures, setMeasures] = useState([]);
+  const [dimension, setDimension] = useState("Product");
+  const [response, setResponse] = useState();
+
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation(fetchData, {
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["columns", { id: variables.id }], data);
+      setResponse(data);
+    },
+    onError: () => {},
+  });
+
+  useEffect(() => {
+    if (dimension && measures.length) {
+      mutate({
+        measures: measures,
+        dimension: dimension,
+      });
+    }
+  }, [dimension, measures, mutate, setDimension, setMeasures]);
 
   if (isError) {
     return <p>{error}</p>;
@@ -12,15 +37,19 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-    <div className="flex h-screen items-center justify-center">
-      <p className="text-indigo-400">Loading...</p>
-    </div>
-    )
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-indigo-400">Loading...</p>
+      </div>
+    );
   }
 
-  const handleGetData = (funcType) => {
-
-  }
+  const handleGetData = (funcType, name) => {
+    if (funcType === DIMENSION) {
+      setDimension(name);
+    } else if (funcType === MEASURE) {
+      setMeasures([...measures, name]);
+    }
+  };
 
   return (
     <section>
@@ -45,7 +74,9 @@ const Dashboard = () => {
                         key={column.name}
                         href="#"
                         className="group flex items-center px-2 py-2 text-sm font-medium text-black rounded-md hover:bg-indigo-300 hover:bg-opacity-75"
-                        onClick={() => handleGetData(column.function)}
+                        onClick={() =>
+                          handleGetData(column.function, column.name)
+                        }
                       >
                         {column.name}
                       </a>
@@ -66,9 +97,16 @@ const Dashboard = () => {
                 </div>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                   {/* Replace with your content */}
-                  <input type="text" />
+
                   <div className="py-4">
-                    <div className="border-4 border-dashed border-gray-200 rounded-lg h-96"></div>
+                    {response ? (
+                      <Chart payload={response} />
+                    ) : (
+                      <p>
+                        You should first select anyone or all of those options (
+                        Cost - Revenue - Units Sold )
+                      </p>
+                    )}
                   </div>
                   {/* /End replace */}
                 </div>
