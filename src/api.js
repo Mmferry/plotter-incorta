@@ -2,25 +2,22 @@ const API_URL = "https://plotter-task.herokuapp.com";
 const DATA = "data";
 const COLUMNS = "columns";
 
-export const fetchColumns = (key) => {
+export const fetchColumns = async (key) => {
   let url = `${API_URL}/${COLUMNS}`;
 
-  return fetch(url).then(res => res.json());
+  const res = await fetch(url);
+  return await res.json();
 }
 
-const testBody = {
-  "measures": ["Cost"],
-  "dimension": "Product"
-}
-
-export const fetchData = (key, body) => {
+export const fetchData = async (body) => {
   let url = `${API_URL}/${DATA}`;
 
-  return fetch(url,  {
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(testBody)
-  }).then(res => res.json());
+    body: JSON.stringify(body)
+  });
+  return await res.json();
 }
