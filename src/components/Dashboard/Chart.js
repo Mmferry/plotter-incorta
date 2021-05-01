@@ -5,13 +5,7 @@ const options = {
   scales: {},
 };
 
-function randomColor() {
-  var num = Math.round(Math.random() * Math.pow(10, 7));
-  // Converting number to hex string to be read as RGB
-  var hexString = "#" + num.toString(16);
-
-  return hexString;
-}
+const colorPicker = ["#08457c", "#1e81b0", "#e07b39"]
 
 const Chart = ({ payload }) => {
   const [data, setData] = useState();
@@ -23,8 +17,8 @@ const Chart = ({ payload }) => {
           label: payload[i].name,
           data: payload[i].values,
           fill: false,
-          backgroundColor: randomColor(),
-          borderColor: randomColor(),
+          backgroundColor: colorPicker[i-1],
+          borderColor: colorPicker[i-1],
           yAxisID: payload[i].name,
         });
       }

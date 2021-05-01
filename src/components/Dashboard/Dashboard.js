@@ -19,7 +19,6 @@ const Dashboard = () => {
       queryClient.setQueryData(["columns", { id: variables.id }], data);
       setResponse(data);
     },
-    onError: () => {},
   });
 
   useEffect(() => {
@@ -51,6 +50,28 @@ const Dashboard = () => {
     }
   };
 
+  const onDragStart = (ev, id, type) => {
+    ev.dataTransfer.setData(type, id);
+  };
+
+  const onDragOver = (ev) => {
+    ev.preventDefault();
+  };
+
+  const onDrop = (ev, type) => {
+    let name = ev.dataTransfer.getData(type);
+    if (name !== "") handleGetData(type, name);
+    return;
+  };
+
+  const handleClear = (funcType) => {
+    if (funcType === DIMENSION) {
+      setDimension("");
+    } else if (funcType === MEASURE) {
+      setMeasures([]);
+    }
+  };
+
   return (
     <section>
       <div className="bg-gray-100">
@@ -73,9 +94,13 @@ const Dashboard = () => {
                       <a
                         key={column.name}
                         href="#"
-                        className="group flex items-center px-2 py-2 text-sm font-medium text-black rounded-md hover:bg-indigo-300 hover:bg-opacity-75"
+                        draggable
+                        className="group cursor-move draggable flex items-center px-2 py-2 text-sm font-medium text-black rounded-md hover:bg-indigo-300 hover:bg-opacity-75"
                         onClick={() =>
                           handleGetData(column.function, column.name)
+                        }
+                        onDragStart={(e) =>
+                          onDragStart(e, column.name, column.function)
                         }
                       >
                         {column.name}
@@ -97,6 +122,42 @@ const Dashboard = () => {
                 </div>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                   {/* Replace with your content */}
+                  <div className="droppable-container">
+                    <span className="droppable-containe_type p-1">
+                      Dimension
+                    </span>
+                    <div
+                      className="droppable flex shadow-sm bg-white p-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                      onDragOver={(e) => onDragOver(e)}
+                      onDrop={(e) => onDrop(e, "dimension")}
+                    >
+                      {dimension ? <span className="item">{dimension}</span> : ""}
+                    </div>
+                    <button
+                      onClick={() => handleClear(DIMENSION)}
+                      className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      clear
+                    </button>
+                  </div>
+                  <div className="droppable-container">
+                    <span className="droppable-containe_type p-1">
+                      Measures
+                    </span>
+                    <div
+                      className="droppable flex shadow-sm bg-white p-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                      onDragOver={(e) => onDragOver(e)}
+                      onDrop={(e) => onDrop(e, "measure")}
+                    >
+                      {measures.map((measure)=> <span key={measure} className="item">{measure}</span>)}
+                    </div>
+                    <button
+                      onClick={() => handleClear(MEASURE)}
+                      className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      clear
+                    </button>
+                  </div>
 
                   <div className="py-4">
                     {response ? (
