@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { Dashboard } from "./components/Dashboard";
 
+import "./App.css";
+
 const queryClient = new QueryClient();
 
 function App() {
