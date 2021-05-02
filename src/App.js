@@ -1,11 +1,17 @@
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from "react-query";
 import { Dashboard } from "./components/Dashboard";
 
 import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+    },
+  },
+});
 
-function App() {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Dashboard />
