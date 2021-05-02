@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 
 const options = {
-  scales: {},
+  scales: {
+  }
 };
 
 const colorPicker = ["#08457c", "#1e81b0", "#e07b39"]

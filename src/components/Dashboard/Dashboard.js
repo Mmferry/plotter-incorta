@@ -1,30 +1,33 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "react-query";
-import { fetchColumns, fetchData } from "../../api";
+import { useQueryClient } from "react-query";
 import Chart from "./Chart";
 import Sidebar from "./Sidebar";
 import DroppableContainer from "./DroppableContainer";
+import { useFetchColumns } from "./useFetchColumns";
+import { useFetchData } from "./useFetchData";
 
 const DIMENSION = "dimension";
 const MEASURE = "measure";
 
 const Dashboard = () => {
-  const { data, error, isLoading, isError } = useQuery("columns", fetchColumns);
   const [measures, setMeasures] = useState([]);
   const [dimension, setDimension] = useState("Product");
   const [response, setResponse] = useState();
-
+  const [plotterError, setPlotterError] = useState();
+  const [isPlotterLoading, setIsPlotterLoading] = useState(false);
+  const { data, isLoading, isError, error } = useFetchColumns();
   const queryClient = useQueryClient();
-  const { mutate } = useMutation(fetchData, {
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(["columns", { id: variables.id }], data);
-      setResponse(data);
-    },
-  });
+  const { mutate } = useFetchData(
+    queryClient,
+    setResponse,
+    setPlotterError,
+    setIsPlotterLoading
+  );
 
   useEffect(() => {
     if (dimension && measures.length) {
+      setIsPlotterLoading(true);
       mutate({
         measures: measures,
         dimension: dimension,
@@ -33,7 +36,13 @@ const Dashboard = () => {
   }, [dimension, measures, mutate, setDimension, setMeasures]);
 
   if (isError) {
-    return <p>{error}</p>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-red-400">
+        An error has occurred: {error.message}
+        </p>
+      </div>
+    );
   }
 
   if (isLoading) {
@@ -74,6 +83,33 @@ const Dashboard = () => {
     }
   };
 
+  const renderChart = () => {
+    if (isPlotterLoading) {
+      return (
+        <div className="flex h-screen items-center justify-center">
+          <p className="text-indigo-400">Loading...</p>
+        </div>
+      );
+    } else if (plotterError && JSON.stringify(plotterError) !== '{}') {
+      return (
+        <div className="flex h-screen items-center justify-center">
+          <p className="text-red-400">
+            An error has occurred: {plotterError.message}
+          </p>
+        </div>
+      );
+    } else {
+      return response ? (
+        <Chart payload={response} />
+      ) : (
+        <p className="text-indigo-400 text-xs">
+          You should first drag any measure or all of those options ( Cost -
+          Revenue - Units Sold ) in the box!
+        </p>
+      );
+    }
+  };
+
   return (
     <section>
       <div className="bg-gray-100">
@@ -103,16 +139,7 @@ const Dashboard = () => {
                     measures={measures}
                   />
 
-                  <div className="py-4">
-                    {response ? (
-                      <Chart payload={response} />
-                    ) : (
-                      <p>
-                        You should first select anyone or all of those options (
-                        Cost - Revenue - Units Sold )
-                      </p>
-                    )}
-                  </div>
+                  <div className="py-4">{renderChart()}</div>
                   {/* /End replace */}
                 </div>
               </div>

@@ -12,7 +12,7 @@ const Sidebar = ({ data, handleGetData, onDragStart}) => {
                 alt="Incorta"
               />
             </div>
-            <nav className="mt-5 flex-1 px-2 space-y-1">
+            <nav className="mt-5 flex-1 px-2 space-y-1 list">
               {data.map((column) => (
                 // eslint-disable-next-line jsx-a11y/anchor-is-valid
                 <a
